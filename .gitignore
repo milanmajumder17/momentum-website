@@ -1,0 +1,6 @@
+*.bak
+games/iq.html.bak
+node_modules/
+tools/matrix-gen/output/
+.DS_Store
+Thumbs.db

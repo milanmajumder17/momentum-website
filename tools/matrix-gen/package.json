@@ -1,0 +1,11 @@
+{
+  "name": "matrix-gen",
+  "version": "1.0.0",
+  "description": "Carpenter-Just-Shell (1990) matrix reasoning SVG generator with IRT difficulty mapping",
+  "type": "commonjs",
+  "scripts": {
+    "generate": "node generate.js --rule=all --count=2 --seed=42",
+    "bank": "node build-bank.js --count=100 --seed=7 --out=itemBank.json",
+    "simulate": "node simulate-cat.js --n=5000 --len=20 --seed=20260928 --bank=itemBank.json --gridstep=0.05"
+  }
+}

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Adaptive Matrix IQ Test — Momentum Education">
+<title>Matrix IQ Test — Momentum Education</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+.mx-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:360px;margin:0 auto}
+.mx-cell{aspect-ratio:1/1;background:var(--bg);border:2px solid var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--text);padding:6px}
+.mx-cell.missing{border-style:dashed;border-color:var(--accent);font-size:34px;font-weight:700;color:var(--accent)}
+.mx-cell svg{width:100%;height:100%}
+.opt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:420px;margin:18px auto 0}
+.opt-cell{aspect-ratio:1/1;background:var(--bg);border:2px solid var(--line);border-radius:12px;cursor:pointer;color:var(--text);padding:6px;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
+.opt-cell:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.opt-cell svg{width:100%;height:100%}
+.pbar{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.pbar>div{height:100%;background:var(--accent);border-radius:99px;transition:width .35s ease}
+.fadein{animation:fadeInUp .45s ease}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@media(max-width:480px){.opt-grid{gap:8px}.mx-grid{max-width:300px}}
+</style>
+</head>
+<body data-theme="classic">
+<header class="top">
+<button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+<div class="logo">Momentum Education</div>
+<div class="right"><button class="btn ghost" id="themeBtn">Dark</button></div>
+</header>
+<div class="shade" id="shade"></div>
+<nav class="side" id="side"></nav>
+<main>
+<div class="quiz-container" style="max-width:760px">
+<!-- ================= START ================= -->
+<section id="startScreen" class="quiz-card text-center fadein" style="padding:44px 28px">
+<div style="font-size:52px">🧩</div>
+<h1 style="font-family:'Playfair Display',serif;font-size:clamp(24px,4vw,34px);margin:10px 0 6px">অ্যাডাপ্টিভ ম্যাট্রিক্স IQ টেস্ট</h1>
+<p style="color:var(--muted);font-size:15px;line-height:1.9;max-width:560px;margin:0 auto">কম্পিউটার তোমার উত্তরের ভিত্তিতে পরের প্রশ্ন বেছে নেবে (IRT-CAT)।<br>খালি ঘরে (<b>?</b>) কোন আকৃতি বসবে — নিচের <b>৬টি</b> থেকে বেছে নাও।<br><span style="font-size:13px">১২টি প্রশ্ন · ~৫ মিনিট · ফলাফলে IQ + বেল কার্ভ</span></p>
+<button class="btn" id="startBtn" style="margin-top:22px;padding:13px 44px;font-size:17px;font-weight:700">শুরু করুন ▶</button>
+<p style="font-size:12px;color:var(--muted);margin-top:14px">সংক্ষিপ্ত স্ক্রিনিং — গবেষণাভিত্তিক পূর্ণ পরীক্ষা নয়।</p>
+</section>
+<!-- ================= TEST ================= -->
+<section id="testScreen" class="quiz-card" style="display:none">
+<div class="flex items-center justify-between flex-wrap gap-2" style="margin-bottom:12px">
+<span id="qNum" class="font-bold" style="color:var(--accent);font-size:15px">প্রশ্ন ১ / ১২</span>
+<span id="liveTheta" style="font-size:12px;color:var(--muted)">আনুমানিক IQ: —</span>
+</div>
+<div class="pbar" style="margin-bottom:20px"><div id="pFill" style="width:0%"></div></div>
+<p class="text-center" style="font-size:14px;color:var(--muted);margin-bottom:12px">খালি ঘরে কোনটি বসবে?</p>
+<div class="mx-grid" id="mxGrid"></div>
+<div class="opt-grid" id="optGrid"></div>
+</section>
+<!-- ================= RESULT ================= -->
+<section id="resultScreen" class="quiz-card text-center" style="display:none;padding:36px 24px">
+<div style="font-size:48px">🏆</div>
+<h2 style="font-family:'Playfair Display',serif;font-size:26px;margin:8px 0 2px">তোমার ফলাফল</h2>
+<div id="iqBig" style="font-family:'Playfair Display',serif;font-size:56px;font-weight:700;color:var(--accent)">—</div>
+<div id="iqMeta" style="font-size:14px;color:var(--muted)">—</div>
+<div style="max-width:560px;margin:18px auto 0"><canvas id="bellChart" height="220"></canvas></div>
+<div id="ciLine" style="font-size:13px;color:var(--muted);margin-top:10px">—</div>
+<div class="flex justify-center flex-wrap gap-3" style="margin-top:20px">
+<button class="btn" id="restartBtn">🔄 আবার চেষ্টা করো</button>
+<button class="btn ghost" id="homeBtn">🏠 হোমপেজে ফেরত</button>
+</div>
+<p style="font-size:12px;color:var(--muted);margin-top:14px">নোট: এটি সংক্ষিপ্ত স্ক্রিনিং পরীক্ষা। গবেষণাভিত্তিক পূর্ণ পরীক্ষা নয়।</p>
+</section>
+</div>
+</main>
+<footer>
+<strong>Our motive</strong><br>
+সবার জন্য বিনামূল্যে মানসম্মত শিক্ষা পৌঁছে দেওয়া।
+<div class="links">
+<a href="../contact.html">Contacts</a>
+<a href="https://www.youtube.com/@momentum.education" target="_blank">YouTube</a>
+<a href="https://www.facebook.com/momentum.edu.official" target="_blank">Facebook</a>
+</div>
+<p style="font-size:12px;color:var(--muted);margin-top:12px">ICAR-style reasoning items, not copied. Original Bengali items.</p>
+</footer>
+<script src="../js/utils.js"></script>
+<script src="../js/irt-engine.js"></script>
+<script src="../js/item-bank.js"></script>
+<script src="../js/matrix-items.js"></script>
+<script>
+/* CAT state — 12 items, max Fisher info, EAP after each answer.
+   Bank uses c=0 (2PL — guessing handled by plausible distractors, not a 3PL floor). */
+var TEST_LEN = 12;
+var eng = null;
+try { eng = new IrtEngine({ gridStep: 0.1 }); } // coarser grid = fast on mobile
+catch(e){ eng = new IrtEngine(); }
+var bank = (window.ITEM_BANK || []).slice();
+var MI = (window.MatrixItems && window.MatrixItems.generateForItem)
+  ? window.MatrixItems : (window.MatrixItems && window.MatrixItems.MatrixItems) || null;
+if(!bank.length){ try { bank = JSON.parse('[]'); } catch(e){} }
+var thetaHat = 0, usedIds = {}, items = [], resps = [], qIdx = 0, curStim = null, curItem = null, locked = false;
+var bellChart = null;
+var BN = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+function bn(n){ return String(n).replace(/[0-9]/g, function(d){ return BN[+d]; }); }
+function normCdf(z){
+  var t = 1 / (1 + 0.2316419 * Math.abs(z));
+  var d = 0.3989423 * Math.exp(-z * z / 2);
+  var p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+  return z > 0 ? 1 - p : p;
+}
+function pickNext(){
+  var pool = bank.filter(function(it){ return !usedIds[it.id]; });
+  if(!pool.length) return null;
+  if(eng.selectNextCATItem){
+    try {
+      var seen = [];
+      for(var k in usedIds){ if(usedIds[k]) seen.push(k); }
+      var pick = eng.selectNextCATItem(thetaHat, pool, seen);
+      if(pick) return pick;
+    } catch(e){}
+  }
+  var best = pool[0], bi = -Infinity;
+  for(var i = 0; i < pool.length; i++){
+    var inf = 0;
+    try { inf = eng.fisherInfo(thetaHat, pool[i]); } catch(e){ inf = 0; }
+    if(inf > bi){ bi = inf; best = pool[i]; }
+  }
+  return best;
+}
+function renderQ(){
+  locked = false;
+  if(!bank.length || !MI){
+    var mx0 = document.getElementById('mxGrid');
+    if(mx0) mx0.innerHTML = '<p style="color:var(--muted);font-size:14px">প্রশ্ন লোড হয়নি — js/item-bank.js বা matrix-items.js পাওয়া যায়নি।</p>';
+    return;
+  }
+  curItem = pickNext();
+  if(!curItem || qIdx >= TEST_LEN){ showResult(); return; }
+  usedIds[curItem.id] = 1;
+  var h = 0;
+  for(var hi = 0; hi < curItem.id.length; hi++){ h = (h * 31 + curItem.id.charCodeAt(hi)) | 0; }
+  var seed = ((Date.now() % 100000) + qIdx * 7919 + (h < 0 ? -h : h) * 131) >>> 0;
+  curStim = MI.generateForItem(curItem, seed);
+  document.getElementById('qNum').textContent = 'প্রশ্ন ' + bn(qIdx + 1) + ' / ' + bn(TEST_LEN);
+  document.getElementById('pFill').style.width = Math.round(qIdx / TEST_LEN * 100) + '%';
+  var mx = document.getElementById('mxGrid'); mx.innerHTML = '';
+  curStim.cells.forEach(function(c){
+    var d = document.createElement('div');
+    d.className = 'mx-cell' + (c === '?' ? ' missing' : '');
+    d.innerHTML = (c === '?') ? '?' : c;
+    mx.appendChild(d);
+  });
+  var og = document.getElementById('optGrid'); og.innerHTML = '';
+  curStim.options.forEach(function(svg, i){
+    var b = document.createElement('button');
+    b.className = 'opt-cell'; b.setAttribute('aria-label', 'বিকল্প ' + (i + 1));
+    b.type = 'button';
+    b.innerHTML = svg;
+    b.onclick = function(){ answer(i); };
+    b.onkeydown = function(ev){ if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); answer(i); } };
+    og.appendChild(b);
+  });
+}
+function answer(i){
+  if(locked || !curStim) return;
+  locked = true;
+  var correct = (i === curStim.key);
+  items.push(curItem); resps.push(correct ? 1 : 0);
+  var e = eng.estimateThetaEAP(resps, items);
+  thetaHat = e.theta;
+  document.getElementById('liveTheta').textContent = 'আনুমানিক IQ: ' + bn(Math.round(eng.thetaToIQ(thetaHat)));
+  var cells = document.getElementById('optGrid').children;
+  if(cells[curStim.key]){ cells[curStim.key].style.borderColor = '#28a745'; cells[curStim.key].style.boxShadow = '0 0 0 3px rgba(40,167,69,.35)'; }
+  if(!correct && cells[i]){ cells[i].style.borderColor = '#dc3545'; cells[i].style.boxShadow = '0 0 0 3px rgba(220,53,69,.35)'; }
+  qIdx++;
+  setTimeout(function(){
+    document.getElementById('pFill').style.width = Math.round(qIdx / TEST_LEN * 100) + '%';
+    if(qIdx >= TEST_LEN) showResult(); else renderQ();
+  }, 650);
+}
+function bandFor(iq){
+  if(iq >= 130) return 'অত্যন্ত উচ্চ';
+  if(iq >= 115) return 'উচ্চ';
+  if(iq >= 85) return 'গড়';
+  if(iq >= 70) return 'গড়ের নিচে';
+  return 'অনেক কম';
+}
+function showResult(){
+  document.getElementById('testScreen').style.display = 'none';
+  document.getElementById('startScreen').style.display = 'none';
+  var rs = document.getElementById('resultScreen');
+  rs.style.display = 'block';
+  var rep = eng.scoreReport(resps, items);
+  var iq = Math.round(rep.iq);
+  var pct = Math.round(normCdf(rep.theta) * 100);
+  document.getElementById('pFill').style.width = '100%';
+  document.getElementById('iqBig').textContent = bn(iq);
+  document.getElementById('iqMeta').textContent = bandFor(iq) + ' · ' + bn(resps.filter(function(x){return x===1;}).length) + '/' + bn(TEST_LEN) + ' সঠিক · ' + bn(pct) + 'তম পার্সেন্টাইল';
+  document.getElementById('ciLine').textContent = '৯৫% আস্থা ব্যবধান: ' + bn(Math.round(rep.lo)) + ' – ' + bn(Math.round(rep.hi)) + ' (SE ≈ ' + bn(rep.seIQ.toFixed(1)) + ')';
+  drawBell(rep.theta, rep.iq);
+  try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e){ window.scrollTo(0, 0); }
+}
+function drawBell(thetaHat, iqHat){
+  if(typeof Chart === 'undefined') return;
+  var xs = [], ys = [];
+  for(var x = 55; x <= 145; x += 1.5){
+    var z = (x - 100) / 15;
+    xs.push(x);
+    ys.push(Math.exp(-0.5 * z * z) / (15 * Math.sqrt(2 * Math.PI)));
+  }
+  var isDark = false;
+  try { isDark = (document.body.getAttribute('data-theme') === 'dark') || (document.documentElement.getAttribute('data-theme') === 'dark'); } catch(e){}
+  var grid = isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.08)';
+  var tick = isDark ? '#b39a74' : '#8a6d47';
+  if(bellChart){ bellChart.destroy(); bellChart = null; }
+  var ctx = document.getElementById('bellChart').getContext('2d');
+  bellChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: xs.map(function(v){ return Math.round(v); }), datasets: [
+      { label: 'স্বাভাবিক বণ্টন (μ=100, σ=15)', data: ys, borderColor: '#7a4e2a', backgroundColor: 'rgba(122,78,42,.12)', fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2 },
+      { label: 'তোমার IQ: ' + Math.round(iqHat), data: xs.map(function(v){ return Math.abs(v - iqHat) < 1.6 ? Math.exp(-0.5 * Math.pow((v-100)/15, 2)) / (15 * Math.sqrt(2 * Math.PI)) : null; }), borderColor: '#c0392b', backgroundColor: '#c0392b', pointRadius: 5, pointHoverRadius: 7, borderWidth: 0, showLine: false, spanGaps: false }
+    ]},
+    options: { responsive: true, plugins: { legend: { labels: { color: tick, font: { size: 11 } } } }, scales: { x: { ticks: { color: tick, maxTicksLimit: 7 }, grid: { color: grid } }, y: { ticks: { display: false }, grid: { color: grid } } } }
+  });
+}
+function reset(){
+  thetaHat = 0; usedIds = {}; items = []; resps = []; qIdx = 0; curStim = null; curItem = null; locked = false;
+  document.getElementById('liveTheta').textContent = 'আনুমানিক IQ: —';
+  document.getElementById('resultScreen').style.display = 'none';
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('testScreen').style.display = 'block';
+  renderQ();
+}
+document.getElementById('startBtn').onclick = function(){ reset(); };
+document.getElementById('restartBtn').onclick = function(){ reset(); };
+document.getElementById('homeBtn').onclick = function(){ window.location.href = '../index.html'; };
+initPage();
+
+</script>
+</body>
+</html>
+

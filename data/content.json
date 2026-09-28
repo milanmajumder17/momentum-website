@@ -1,0 +1,145 @@
+{
+ "videos": {
+ "title": "Videos",
+ "description": "Watch educational videos uploaded by Momentum Education.",
+ "items": [
+ {
+ "title": "SSC Math: Algebra Basics | Chapter 1",
+ "youtubeId": "dQw4w9WgXcQ",
+ "description": "Learn variables, expressions, and equations step by step."
+ },
+ {
+ "title": "SSC Physics: Motion | Chapter 2",
+ "youtubeId": "dQw4w9WgXcQ",
+ "description": "Understand distance, velocity, and acceleration with examples."
+ }
+ ]
+ },
+ "books": {
+ "title": "Books",
+ "description": "Copyright-free books and study materials, downloadable.",
+ "items": [
+ {
+ "title": "SSC Higher Math — Suggestion & Model Test",
+ "url": "https://drive.google.com/uc?export=download&id=PLACEHOLDER_BOOK_URL",
+ "description": "Fully solved model test for SSC Higher Math. Updated for 2025."
+ },
+ {
+ "title": "HSC Physics Textbook (NCERT Style)",
+ "url": "https://drive.google.com/uc?export=download&id=PLACEHOLDER_BOOK_URL",
+ "description": "Complete textbook PDF for HSC Physics preparation."
+ }
+ ]
+ },
+ "questions": {
+ "title": "Question & Sheets",
+ "description": "Board and school exam questions, categorized by Board, Class, and Subject.",
+ "categories": ["Science", "Commerce", "Arts"],
+ "classes": ["9", "10", "11", "12"],
+ "items": [
+ {
+ "title": "SSC Science 2024 — Physics",
+ "board": "Dhaka",
+ "class": "10",
+ "subject": "Physics",
+ "url": "questions/ssc-science-physics-2024.pdf"
+ },
+ {
+ "title": "SSC Science 2024 — Chemistry",
+ "board": "Dhaka",
+ "class": "10",
+ "subject": "Chemistry",
+ "url": "questions/ssc-science-chemistry-2024.pdf"
+ }
+ ]
+ },
+ "games": {
+ "title": "IQ Games",
+ "description": "Sharpen your mind with browser-playable games.",
+ "items": [
+ {
+ "title": "IQ Test",
+ "url": "games/iq.html",
+ "description": "Test your IQ with pattern recognition challenges."
+ },
+ {
+ "title": "Chess",
+ "url": "#",
+ "description": "Play chess online. Coming soon! (coming soon)"
+ },
+ {
+ "title": "N-back",
+ "url": "#",
+ "description": "N-back working memory game. Coming soon! (coming soon)"
+ }
+ ]
+ },
+ "music": {
+ "title": "Study Music",
+ "description": "Binaural-beat mixed study music — playable and downloadable.",
+ "items": [
+ {
+ "title": "3 Hours Binaural Beats — Focus & Concentration",
+ "file": "music/focus-3hours.mp3",
+ "description": "Alpha wave binaural beats for sustained study sessions."
+ },
+ {
+ "title": "1 Hour Deep Focus — Study Sessions",
+ "file": "music/deep-focus-1hour.mp3",
+ "description": "Theta-wave binaural beats for complex problem solving."
+ }
+ ]
+ },
+ "tools": {
+ "title": "Tools",
+ "description": "Study tools and automation for teachers and students.",
+ "items": [
+ {
+ "title": "GPA Calculator",
+ "url": "#",
+ "description": "Calculate your GPA instantly. Coming soon! (coming soon)"
+ },
+ {
+ "title": "Grade Converter",
+ "url": "#",
+ "description": "Convert grades between systems. Coming soon! (coming soon)"
+ }
+ ]
+ },
+ "math": {
+ "title": "General Math",
+ "description": "Resources for General Math (SSC & HSC level).",
+ "items": [
+ {
+ "title": "SSC Math Notes — Algebra",
+ "url": "#",
+ "description": "Complete notes for SSC General Math Chapter 1: Algebra."
+ },
+ {
+ "title": "SSC Math Notes — Geometry",
+ "url": "#",
+ "description": "Complete notes for SSC General Math Chapter 2: Geometry."
+ }
+ ]
+ },
+ "physics": {
+ "title": "Physics",
+ "description": "Resources for Physics (SSC & HSC level).",
+ "items": []
+ },
+ "chemistry": {
+ "title": "Chemistry",
+ "description": "Resources for Chemistry (SSC & HSC level).",
+ "items": []
+ },
+ "biology": {
+ "title": "Biology",
+ "description": "Resources for Biology (SSC & HSC level).",
+ "items": []
+ },
+ "highermath": {
+ "title": "Higher Math",
+ "description": "Resources for Higher Math (HSC level).",
+ "items": []
+ }
+}
