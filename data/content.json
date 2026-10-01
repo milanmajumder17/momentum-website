@@ -63,6 +63,11 @@
  "description": "Test your IQ with pattern recognition challenges."
  },
  {
+ "title": "Math Strike",
+ "url": "games/math-birds.html",
+ "description": "Mental-math drone defense game. Solve equations and FIRE to destroy drones!"
+ },
+ {
  "title": "Chess",
  "url": "#",
  "description": "Play chess online. Coming soon! (coming soon)"
