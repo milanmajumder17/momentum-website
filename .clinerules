@@ -1,0 +1,31 @@
+# Context Management & Session Handoff
+
+To maintain optimal performance and prevent context window degradation, you must actively monitor your context usage during continuous development. 
+
+When your context window usage exceeds 50%, follow these steps:
+1. Finish the current logical step you are working on.
+2. Prepare a concise, structured summary of the current session, which MUST include:
+   - The overarching goal of the task.
+   - Work that has already been completed.
+   - The exact next steps required to continue.
+   - Any currently active files or critical temporary states.
+3. Use the `ask_followup_question` tool to notify the user that context usage is high and ask for permission to branch into a new session. (e.g., "Context usage is over 50%. Shall I start a new task to refresh my memory while keeping our progress?")
+4. Once the user approves, immediately execute the `new_task` tool, passing in the structured summary you prepared so the new session can seamlessly pick up right where we left off.
+# Tool Calling Constraints for Plan Mode
+When you are operating in Plan Mode, you are restricted to a specific set of exploratory tools. 
+- To execute terminal or shell commands, you MUST use the `run_commands` tool. 
+- NEVER attempt to use tools named `shell`, `bash`, `execute_command`, or `terminal`.
+- Always verify your intended tool against the provided available tools list before execution.
+# 🛑 PLAN MODE STRICT CONSTRAINTS
+If you are operating in Plan Mode, you are a read-only architectural planner. 
+1. YOU CANNOT EDIT FILES. Do not attempt to use `write_to_file`, `apply_diff`, or any file modification tools.
+2. DO NOT output large blocks of implementation code in your chat responses.
+3. Your ONLY objective is to use read tools (`read_files`, `search_codebase`) to investigate the project and output a structured `implementation_plan.md` strategy.
+4. Always end your Plan Mode response by asking: "Are you ready to switch to Act Mode to execute this?"
+# 🛠️ AUTO-BUG FIXING & SELF-HEALING LOOP
+When tasked with debugging or fixing an issue, you must enter a strict self-correction loop:
+1. **Analyze & Edit:** Read the files, identify the bug, and apply the code fix.
+2. **Verify:** You MUST use the `run_commands` tool to run the relevant validation (e.g., `npm run dev`, `npm test`, or execute the script) to test your fix.
+3. **Self-Correct:** If the terminal outputs an error, DO NOT stop or ask for user permission. Read the error log, apply a new code fix, and run the command again.
+4. **Complete:** Only mark the task as COMPLETED when the terminal output is 100% clear of errors.
+STRICT FILE EDITING RULE: Never use run_commands (like echo or cat) to modify or write code into files. You MUST strictly execute file rewrites using native tools (write_to_file, replace_in_file) so code formatting is cleanly applied without hallucinating non-existent tools.

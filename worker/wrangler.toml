@@ -1,0 +1,11 @@
+name = "memorizer-proxy"
+main = "memorizer-proxy.js"
+compatibility_date = "2024-01-01"
+
+[env.production]
+kv_namespaces = [
+  { binding = "KV", id = "YOUR_KV_NAMESPACE_ID" }
+]
+
+# Set secrets with: wrangler secret put GEMINI_API_KEY
+# Get KV namespace: wrangler kv:namespace create "RATE_LIMIT"

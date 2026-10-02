@@ -11,7 +11,7 @@ var categories=[
 function generateSidebar(){
  var side=document.getElementById('side');
  if(!side) return;
- var prefix=window.location.pathname.indexOf("/games/")>-1?"../":"";
+ var prefix=(window.location.pathname.indexOf("/games/")>-1||window.location.pathname.indexOf("/tools/")>-1)?"../":"";
  var html='<a href="' + prefix + 'index.html"><b>Home</b></a>';
  for(var i=0;i<categories.length;i++){
  var c=categories[i];

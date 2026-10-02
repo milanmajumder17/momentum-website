@@ -100,6 +100,11 @@
  "description": "Study tools and automation for teachers and students.",
  "items": [
  {
+ "title": "Memorizer",
+ "url": "tools/memorizer.html",
+ "description": "AI-powered textbook memorization. Upload a page, AI extracts questions, practice until mastered."
+ },
+ {
  "title": "GPA Calculator",
  "url": "#",
  "description": "Calculate your GPA instantly. Coming soon! (coming soon)"
