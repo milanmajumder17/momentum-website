@@ -91,7 +91,7 @@ Return JSON:
 }`;
 
       const geminiResponse = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${env.GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${env.GEMINI_API_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -113,8 +113,8 @@ Return JSON:
 
       if (!geminiResponse.ok) {
         const errText = await geminiResponse.text();
-        console.error('Gemini error:', errText);
-        return jsonResponse({ error: 'AI service error' }, 500);
+        console.error('Gemini error:', geminiResponse.status, errText);
+        return jsonResponse({ error: 'Gemini upstream ' + geminiResponse.status + ': ' + errText.slice(0, 2000) }, 500);
       }
 
       const geminiData = await geminiResponse.json();
