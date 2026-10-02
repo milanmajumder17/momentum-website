@@ -33,7 +33,6 @@
     var _q = '';
     try { _q = window.location.search || ''; } catch (eQ) {}
     this.mockMode = _q.indexOf('mock=1') > -1;
-    this.directMode = _q.indexOf('direct=1') > -1;
     this.lastResult = null;
   }
 
@@ -102,22 +101,9 @@
     var self = this;
     this.stopTimer();
     this.e.state = 'home';
-    var savedKey = '';
-    var hasKey = false;
-    try {
-      try { savedKey = localStorage.getItem('memorizer_google_key') || ''; } catch (eLS) {}
-      if (self.ai && self.ai.config && self.ai.config.GOOGLE_API_KEY) savedKey = self.ai.config.GOOGLE_API_KEY;
-      hasKey = !!(savedKey && savedKey !== 'YOUR_KEY_HERE' && savedKey.indexOf('YOUR_') !== 0);
-    } catch (eK) {}
-    var keyMsg = hasKey ? '<p style="color:green;font-size:13px">API key saved in this browser. Uploads go straight to Gemini.</p>' : '<p style="color:var(--muted);font-size:13px">No API key in this browser yet. Paste your Gemini key below (stored only here), or deploy the Worker proxy.</p>';
     var html = ''
       + '<div class="mem-screen"><h2>Upload a Page</h2>'
       + '<p>Take a photo of a textbook page or upload an image. AI will extract the text and generate questions.</p>'
-      + keyMsg
-      + '<div style="display:flex;gap:8px;justify-content:center;margin:0 0 12px;flex-wrap:wrap">'
-      + '<input type="password" id="memKeyInput" placeholder="Paste Gemini API key (AQ... / AIza...)" value="' + esc(hasKey ? savedKey : '') + '" style="min-width:min(320px,80vw);padding:8px;border:1px dashed var(--muted);border-radius:6px">'
-      + '<button class="btn ghost" id="memKeySave">Save key</button>'
-      + '<button class="btn ghost" id="memKeyClear">Clear</button></div>'
       + '<input type="file" accept="image/*" capture="environment" id="memCapture" style="display:none">'
       + '<input type="file" accept="image/*" id="memUpload" style="display:none">'
       + '<div><button class="btn" id="memCaptureBtn">Take a Photo</button> '
@@ -127,21 +113,6 @@
     }
     html += '</div>';
     this.c.innerHTML = html;
-    var keyInput = el('memKeyInput');
-    var keySave = el('memKeySave');
-    var keyClear = el('memKeyClear');
-    if (keyInput && hasKey) { try { keyInput.value = savedKey; } catch (eV) {} }
-    if (keySave) keySave.onclick = function () {
-      var v = keyInput ? keyInput.value.trim() : '';
-      if (!v) { alert('Please paste a key first.'); return; }
-      try { if (self.ai) self.ai.setGoogleKey(v); else localStorage.setItem('memorizer_google_key', v); } catch (eS) {}
-      alert('Key saved in this browser.');
-      self.showHome();
-    };
-    if (keyClear) keyClear.onclick = function () {
-      try { if (self.ai) self.ai.setGoogleKey(''); localStorage.removeItem('memorizer_google_key'); } catch (eC) {}
-      self.showHome();
-    };
     el('memCaptureBtn').onclick = function () { el('memCapture').click(); };
     el('memUploadBtn').onclick = function () { el('memUpload').click(); };
     el('memCapture').onchange = function (ev) { self.handleFile(ev.target.files[0]); };

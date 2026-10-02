@@ -4,15 +4,12 @@
 // ============================================================
 (function(root){
   'use strict';
-  var SYSTEM_API_KEY = 'YOUR_KEY_HERE';
   var CONFIG = {
-    WORKER_URL: 'https://memorizer-proxy.YOUR_WORKER_SUBDOMAIN.workers.dev',
-    GOOGLE_API_KEY: SYSTEM_API_KEY === 'YOUR_KEY_HERE' ? '' : SYSTEM_API_KEY,
+    WORKER_URL: 'https://memorizer-proxy.milanmajumder17.workers.dev',
     GEMINI_MODEL: 'gemini-3.1-flash-lite',
     MAX_IMAGE_SIZE: 1600,
     JPEG_QUALITY: 0.8,
-    MOCK_MODE: false,
-    DIRECT_MODE: false
+    MOCK_MODE: false
   };
 
   function MemorizerAI(config){
@@ -20,31 +17,7 @@
     var qs = '';
     try { qs = window.location.search || ''; } catch (e) {}
     if (qs.indexOf('mock=1') > -1) this.config.MOCK_MODE = true;
-    if (qs.indexOf('direct=1') > -1) this.config.DIRECT_MODE = true;
-    try {
-      var lsKey = localStorage.getItem('memorizer_google_key') || '';
-      if (lsKey && !this.config.GOOGLE_API_KEY) this.config.GOOGLE_API_KEY = lsKey;
-    } catch (e) {}
-    try {
-      var mKey = qs.match(/[?&]key=([^&]+)/);
-      if (mKey && mKey[1]) {
-        try { this.config.GOOGLE_API_KEY = decodeURIComponent(mKey[1]); } catch (eD) { this.config.GOOGLE_API_KEY = mKey[1]; }
-      }
-    } catch (eK) {}
-    if (typeof window.MEMORIZER_GOOGLE_KEY === 'string' && window.MEMORIZER_GOOGLE_KEY) {
-      this.config.GOOGLE_API_KEY = window.MEMORIZER_GOOGLE_KEY;
-    }
   }
-
-  MemorizerAI.prototype.setGoogleKey = function (key) {
-    // Runtime key only (stored in browser localStorage, never committed).
-    // Priority: window.MEMORIZER_GOOGLE_KEY > ?key= > localStorage > CONFIG.
-    this.config.GOOGLE_API_KEY = key || '';
-    try {
-      if (key) localStorage.setItem('memorizer_google_key', key);
-      else localStorage.removeItem('memorizer_google_key');
-    } catch (e) {}
-  };
 
   MemorizerAI.prototype.compressImage = function(file, callback){
     var maxSize = this.config.MAX_IMAGE_SIZE;
@@ -86,31 +59,9 @@
       }, 400);
       return;
     }
-    // SECURE ROUTING (no hardcoded secret in git):
-    // 1) If a runtime key exists (window.MEMORIZER_GOOGLE_KEY / ?key= / localStorage),
-    //    call Gemini directly.
-    // 2) Else if WORKER_URL is a real https URL, use Worker proxy
-    //    (Worker holds GEMINI_API_KEY as secret via `wrangler secret put`).
-    // 3) Else show friendly setup message — never raw "Failed to fetch".
-    var hasDirectKey = !!(this.config.GOOGLE_API_KEY && this.config.GOOGLE_API_KEY !== 'YOUR_KEY_HERE' && this.config.GOOGLE_API_KEY.indexOf('YOUR_') !== 0 && this.config.GOOGLE_API_KEY.indexOf('[E') !== 0);
-    if (hasDirectKey || this.config.DIRECT_MODE) {
-      if (hasDirectKey) this.config.DIRECT_MODE = true;
-      this.extractTextDirect(imageBlob, progressCallback, callback);
-      return;
-    }
-    var _wUrl = String(this.config.WORKER_URL || '');
-    var _isPlaceholder = !_wUrl || _wUrl.indexOf('YOUR_WORKER_SUBDOMAIN') > -1
-      || _wUrl.indexOf('YOUR_') > -1
-      || _wUrl.indexOf('http://localhost') > -1
-      || _wUrl.indexOf('http://127.0.0.1') > -1
-      || _wUrl.indexOf('localhost') > -1;
-    if (!_isPlaceholder && _wUrl.indexOf('https://') === 0) {
-      this.extractTextViaWorker(imageBlob, progressCallback, callback);
-      return;
-    }
-    // No Worker configured and no runtime key — guide user, do not fetch placeholder.
-    callback(new Error('Google API key not found. Please paste your Gemini key below (saved only in this browser), or deploy the Worker proxy.'));
-    return;
+    // Secure Worker-only routing: frontend never holds the Gemini key.
+    // The Worker (memorizer-proxy) holds GEMINI_API_KEY as a secret.
+    this.extractTextViaWorker(imageBlob, progressCallback, callback);
   };
 
   MemorizerAI.prototype.blobToBase64 = function (blob, callback) {
@@ -143,61 +94,6 @@
     + '"complexity":"easy|medium|hard","lines":[{"line_id":"1-1","text":"..."}],'
     + '"questions":[{"id":"q1","line_id":"1-1","type":"mcq","q":"...","options":["a","b","c","d"],'
     + '"answer":0,"explanation":"..."}]}],"key_notes":["..."]}';
-
-  MemorizerAI.prototype.extractTextDirect = function (imageBlob, progressCallback, callback) {
-    var self = this;
-    var key = this.config.GOOGLE_API_KEY || '';
-    if (!key || key === 'YOUR_KEY_HERE' || key.indexOf('YOUR_') === 0 || key.indexOf('[E') === 0) {
-      callback(new Error('Google API key not found. Please paste your Gemini key in the key box below (saved only in this browser), or deploy the Worker proxy with `wrangler secret put GEMINI_API_KEY`.'));
-      return;
-    }
-    if (progressCallback) progressCallback('Sending image directly to Gemini...');
-    this.blobToBase64(imageBlob, function (b64Err, b64) {
-      if (b64Err) { callback(b64Err); return; }
-      if (progressCallback) progressCallback('AI is generating questions...');
-      var GEMINI_MODEL = self.config.GEMINI_MODEL || 'gemini-3.1-flash-lite';
-      var apiKey = key;
-      var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + encodeURIComponent(apiKey);
-      fetch(url, {
-        method: 'POST',
-        mode: 'cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: MemorizerAI.PROMPT }, { inlineData: { mimeType: 'image/jpeg', data: b64 } }] }],
-          generationConfig: { temperature: 0.4, maxOutputTokens: 8192, responseMimeType: 'application/json' }
-        })
-      }).then(function (res) {
-        if (!res.ok) return res.text().then(function (txt) {
-          var msg = 'AI server error (' + res.status + ')';
-          if (res.status === 400 && txt.indexOf('API key not valid') > -1) msg = 'API key is invalid. Please get a new key from AI Studio.';
-          else if (res.status === 403) msg = 'Gemini API is not enabled for this key.';
-          else if (res.status === 429) msg = 'Too many requests - please try again later.';
-          throw new Error(msg);
-        });
-        return res.json();
-      }).then(function (data) {
-        var textContent = data && data.candidates && data.candidates[0] && data.candidates[0].content
-          && data.candidates[0].content.parts && data.candidates[0].content.parts[0]
-          ? data.candidates[0].content.parts[0].text : '';
-        if (!textContent) throw new Error('No response received from AI.');
-        var parsed = self.parseJsonLoose(textContent);
-        if (parsed && parsed.error === 'unreadable') throw new Error('Image is unreadable. Please take a clearer photo.');
-        callback(null, self.validateAndRepair(parsed));
-      }).catch(function (err) {
-        var rawMsg = String((err && err.message) || err || '');
-        // CORS / offline / DNS failure surfaces as TypeError: Failed to fetch.
-        // Show friendly Bengali message instead of raw alert.
-        if (rawMsg.indexOf('Failed to fetch') > -1
-          || rawMsg.indexOf('NetworkError') > -1
-          || rawMsg.indexOf('Load failed') > -1
-          || (err && err.name === 'TypeError')) {
-          callback(new Error('ইন্টারনেট সংযোগে সমস্যা হয়েছে। অনুগ্রহ করে নেট চেক করে আবার চেষ্টা করুন।'));
-          return;
-        }
-        callback(err);
-      });
-    });
-  };
 
   MemorizerAI.prototype.parseJsonLoose = function (text) {
     var s = String(text || '').trim();
