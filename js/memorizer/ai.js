@@ -86,7 +86,26 @@
       }, 400);
       return;
     }
-    if (this.config.DIRECT_MODE || this.config.GOOGLE_API_KEY) {
+    // PRODUCTION FIX: if a Gemini key exists (hardcoded SYSTEM_API_KEY or saved key),
+    // ALWAYS bypass the Worker proxy and call Gemini directly.
+    var hasDirectKey = !!(this.config.GOOGLE_API_KEY && this.config.GOOGLE_API_KEY !== 'YOUR_KEY_HERE');
+    if (hasDirectKey) {
+      this.config.DIRECT_MODE = true;
+    }
+    if (hasDirectKey || this.config.DIRECT_MODE) {
+      this.extractTextDirect(imageBlob, progressCallback, callback);
+      return;
+    }
+    // SAFETY: never hit placeholder / localhost worker on HTTPS production.
+    // Fall back to direct so user gets a friendly message, not raw "Failed to fetch".
+    var _wUrl = String(this.config.WORKER_URL || '');
+    var _isPlaceholder = _wUrl.indexOf('YOUR_WORKER_SUBDOMAIN') > -1
+      || _wUrl.indexOf('http://localhost') > -1
+      || _wUrl.indexOf('http://127.0.0.1') > -1
+      || _wUrl.indexOf('localhost') > -1;
+    var _isHttps = false;
+    try { _isHttps = (window.location.protocol === 'https:'); } catch (_eHttps) {}
+    if (_isPlaceholder || _isHttps) {
       this.extractTextDirect(imageBlob, progressCallback, callback);
       return;
     }
@@ -140,6 +159,7 @@
       var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + encodeURIComponent(apiKey);
       fetch(url, {
         method: 'POST',
+        mode: 'cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: MemorizerAI.PROMPT }, { inlineData: { mimeType: 'image/jpeg', data: b64 } }] }],
@@ -162,7 +182,19 @@
         var parsed = self.parseJsonLoose(textContent);
         if (parsed && parsed.error === 'unreadable') throw new Error('Image is unreadable. Please take a clearer photo.');
         callback(null, self.validateAndRepair(parsed));
-      }).catch(function (err) { callback(err); });
+      }).catch(function (err) {
+        var rawMsg = String((err && err.message) || err || '');
+        // CORS / offline / DNS failure surfaces as TypeError: Failed to fetch.
+        // Show friendly Bengali message instead of raw alert.
+        if (rawMsg.indexOf('Failed to fetch') > -1
+          || rawMsg.indexOf('NetworkError') > -1
+          || rawMsg.indexOf('Load failed') > -1
+          || (err && err.name === 'TypeError')) {
+          callback(new Error('ইন্টারনেট সংযোগে সমস্যা হয়েছে। অনুগ্রহ করে নেট চেক করে আবার চেষ্টা করুন।'));
+          return;
+        }
+        callback(err);
+      });
     });
   };
 
