@@ -51,7 +51,7 @@ Momentum Education
 <script>
 (function(){
 var catSlug=qs('c');
-fetch('data/content.json').then(function(r){return r.json()}).then(function(content){
+fetch('data/content.json?v=' + new Date().getTime(), { cache: 'no-store' }).then(function(r){return r.json()}).then(function(content){
 var cat=content[catSlug];
 if(!cat){
  document.getElementById('mainContent').innerHTML='<div class="cat-hero"><div class="empty-state"><h2>Category not found</h2><p>The page you are looking for does not exist.</p><p style="margin-top:14px"><a class="btn" href="index.html">Go to Home</a></p></div></div>';
