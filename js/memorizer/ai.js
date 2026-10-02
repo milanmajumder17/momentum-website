@@ -37,8 +37,8 @@
   }
 
   MemorizerAI.prototype.setGoogleKey = function (key) {
-    // Deprecated: API key is now managed via SYSTEM_API_KEY above.
-    // Kept for backward compatibility (e.g. ?key= URL override).
+    // Runtime key only (stored in browser localStorage, never committed).
+    // Priority: window.MEMORIZER_GOOGLE_KEY > ?key= > localStorage > CONFIG.
     this.config.GOOGLE_API_KEY = key || '';
     try {
       if (key) localStorage.setItem('memorizer_google_key', key);
@@ -86,30 +86,31 @@
       }, 400);
       return;
     }
-    // PRODUCTION FIX: if a Gemini key exists (hardcoded SYSTEM_API_KEY or saved key),
-    // ALWAYS bypass the Worker proxy and call Gemini directly.
-    var hasDirectKey = !!(this.config.GOOGLE_API_KEY && this.config.GOOGLE_API_KEY !== 'YOUR_KEY_HERE');
-    if (hasDirectKey) {
-      this.config.DIRECT_MODE = true;
-    }
+    // SECURE ROUTING (no hardcoded secret in git):
+    // 1) If a runtime key exists (window.MEMORIZER_GOOGLE_KEY / ?key= / localStorage),
+    //    call Gemini directly.
+    // 2) Else if WORKER_URL is a real https URL, use Worker proxy
+    //    (Worker holds GEMINI_API_KEY as secret via `wrangler secret put`).
+    // 3) Else show friendly setup message — never raw "Failed to fetch".
+    var hasDirectKey = !!(this.config.GOOGLE_API_KEY && this.config.GOOGLE_API_KEY !== 'YOUR_KEY_HERE' && this.config.GOOGLE_API_KEY.indexOf('YOUR_') !== 0 && this.config.GOOGLE_API_KEY.indexOf('[E') !== 0);
     if (hasDirectKey || this.config.DIRECT_MODE) {
+      if (hasDirectKey) this.config.DIRECT_MODE = true;
       this.extractTextDirect(imageBlob, progressCallback, callback);
       return;
     }
-    // SAFETY: never hit placeholder / localhost worker on HTTPS production.
-    // Fall back to direct so user gets a friendly message, not raw "Failed to fetch".
     var _wUrl = String(this.config.WORKER_URL || '');
-    var _isPlaceholder = _wUrl.indexOf('YOUR_WORKER_SUBDOMAIN') > -1
+    var _isPlaceholder = !_wUrl || _wUrl.indexOf('YOUR_WORKER_SUBDOMAIN') > -1
+      || _wUrl.indexOf('YOUR_') > -1
       || _wUrl.indexOf('http://localhost') > -1
       || _wUrl.indexOf('http://127.0.0.1') > -1
       || _wUrl.indexOf('localhost') > -1;
-    var _isHttps = false;
-    try { _isHttps = (window.location.protocol === 'https:'); } catch (_eHttps) {}
-    if (_isPlaceholder || _isHttps) {
-      this.extractTextDirect(imageBlob, progressCallback, callback);
+    if (!_isPlaceholder && _wUrl.indexOf('https://') === 0) {
+      this.extractTextViaWorker(imageBlob, progressCallback, callback);
       return;
     }
-    this.extractTextViaWorker(imageBlob, progressCallback, callback);
+    // No Worker configured and no runtime key — guide user, do not fetch placeholder.
+    callback(new Error('Google API key not found. Please paste your Gemini key below (saved only in this browser), or deploy the Worker proxy.'));
+    return;
   };
 
   MemorizerAI.prototype.blobToBase64 = function (blob, callback) {
@@ -146,8 +147,8 @@
   MemorizerAI.prototype.extractTextDirect = function (imageBlob, progressCallback, callback) {
     var self = this;
     var key = this.config.GOOGLE_API_KEY || '';
-    if (!key) {
-      callback(new Error('Google API key not found. Please set SYSTEM_API_KEY in js/memorizer/ai.js.'));
+    if (!key || key === 'YOUR_KEY_HERE' || key.indexOf('YOUR_') === 0 || key.indexOf('[E') === 0) {
+      callback(new Error('Google API key not found. Please paste your Gemini key in the key box below (saved only in this browser), or deploy the Worker proxy with `wrangler secret put GEMINI_API_KEY`.'));
       return;
     }
     if (progressCallback) progressCallback('Sending image directly to Gemini...');
