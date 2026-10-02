@@ -18,18 +18,18 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #hearts{font-size:clamp(20px,4vh,28px);letter-spacing:2px;filter:drop-shadow(0 0 6px #f36)}
 .ib{width:clamp(36px,6.5vh,46px);height:clamp(36px,6.5vh,46px);border-radius:10px;border:1px solid #5b7fa3;background:rgba(20,34,56,.78);color:#cfefff;font-size:17px;cursor:pointer;padding:0}
 .ib:active{transform:scale(.92)}
-#panel{height:35%;flex:0 0 35%;min-height:0;max-height:35%;overflow:hidden;overflow-x:hidden;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;justify-content:space-between;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:linear-gradient(#111b2e,#0b1322);border-top:3px solid #2a3c58;max-width:100vw;touch-action:none}
-#pad{order:3;justify-self:end;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr));gap:8px;height:100%;max-height:100%;min-height:0;width:min(44vw,320px);max-width:100%;overflow:hidden;touch-action:none}
-.k{border:1px solid #2f4a6b;border-radius:10px;background:linear-gradient(#1b2b45,#13203a);color:#22d3ee;font:700 clamp(18px,4.4vh,32px) "Courier New",monospace;box-shadow:0 3px 0 #0a1424;cursor:pointer;padding:0;min-width:44px;min-height:44px;touch-action:none}
+#panel{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;max-width:100vw;height:35%;flex:0 0 35%;min-height:0;max-height:35%;padding:10px 10px calc(10px + env(safe-area-inset-bottom));box-sizing:border-box;overflow:hidden;overflow-x:hidden;background:linear-gradient(#111b2e,#0b1322);border-top:3px solid #2a3c58;touch-action:none}
+#pad{order:3;flex:1 1 auto;min-width:0;min-height:0;max-width:350px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,minmax(0,1fr));gap:8px;height:100%;max-height:100%;overflow:hidden;touch-action:none}
+.k{border:1px solid #2f4a6b;border-radius:10px;background:linear-gradient(#1b2b45,#13203a);color:#22d3ee;font:700 clamp(18px,4.4vh,32px) "Courier New",monospace;box-shadow:0 3px 0 #0a1424;cursor:pointer;padding:0;width:100%;height:100%;min-height:45px;touch-action:none}
 .k.dn{transform:translateY(3px);box-shadow:none;background:#1f3d63}
 #bk{grid-column:span 2}
-#mid{order:2;justify-self:center;display:flex;justify-content:center;min-width:0;max-width:100%;overflow:hidden}
-#disp{width:100%;max-width:120px;height:40px;display:flex;align-items:center;justify-content:center;background:#000;border:2px solid #14b8d4;border-radius:10px;color:#22d3ee;font:800 18px "Courier New",monospace;letter-spacing:3px;box-shadow:0 0 18px #14b8d466 inset;white-space:nowrap;overflow:hidden}
-@media (min-width:640px){#disp{max-width:160px;height:48px;font-size:24px}}
+#mid{order:2;flex:0 1 120px;min-width:0;max-width:100%;display:flex;justify-content:center;overflow:hidden}
+#disp{width:100%;max-width:120px;height:48px;display:flex;align-items:center;justify-content:center;background:#000;border:2px solid #14b8d4;border-radius:10px;color:#22d3ee;font:800 18px "Courier New",monospace;letter-spacing:3px;box-shadow:0 0 18px #14b8d466 inset;white-space:nowrap;overflow:hidden}
+@media (min-width:640px){#mid{flex-basis:160px}#disp{max-width:160px;height:48px;font-size:24px}}
 #disp.jam{color:#ff4d4d;border-color:#ff4d4d;animation:sh .12s infinite}
 #disp.auto{color:#ffd25a;border-color:#ffb020;font-size:clamp(18px,4.5vh,32px)}
 @keyframes sh{50%{transform:translateX(4px)}}
-#fire{order:1;justify-self:start;align-self:center;height:100%;max-height:100%;min-height:0;aspect-ratio:1;max-width:100%;border-radius:50%;border:4px solid #3a1010;background:radial-gradient(circle at 50% 30%,#ff5a5a,#c62222 70%,#8f1212);color:#fff;font:800 clamp(16px,3.6vh,26px) "Segoe UI",sans-serif;letter-spacing:2px;box-shadow:0 0 30px #ff2b2b66,0 5px 0 #5a0b0b;cursor:pointer;padding:0;touch-action:none;flex-shrink:0}
+#fire{order:1;flex:0 0 25%;max-width:100px;min-width:0;align-self:center;height:auto;max-height:100%;aspect-ratio:1/1;border-radius:50%;border:4px solid #3a1010;background:radial-gradient(circle at 50% 30%,#ff5a5a,#c62222 70%,#8f1212);color:#fff;font:800 clamp(16px,3.6vh,26px) "Segoe UI",sans-serif;letter-spacing:2px;box-shadow:0 0 30px #ff2b2b66,0 5px 0 #5a0b0b;cursor:pointer;padding:0;box-sizing:border-box;touch-action:none}
 #fire.dn{transform:translateY(5px);box-shadow:0 0 40px #ff2b2b;filter:brightness(1.15)}
 #panel.frozen #pad{opacity:.3;filter:grayscale(1);pointer-events:none}
 #panel.frozen #fire{animation:pl .35s infinite alternate}
@@ -42,10 +42,10 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .btn{display:inline-block;margin:6px;padding:12px 22px;border-radius:12px;border:0;font-weight:700;font-size:16px;cursor:pointer;background:linear-gradient(#2fd0ff,#0b8fc0);color:#02131c;text-decoration:none}
 .btn.g{background:#2a3c58;color:#cfe6ff}
 @media (orientation:portrait){
- #panel{height:35%;flex:0 0 35%;max-height:35%;grid-template-columns:auto minmax(64px,120px) minmax(0,1fr);grid-template-rows:none;overflow:hidden}
- #mid{grid-column:auto;min-width:0}
- #pad{width:100%;max-width:320px;gap:8px}
- #fire{width:clamp(84px,24vw,140px);height:clamp(84px,24vw,140px);max-height:100%;margin:0;flex-shrink:0}
+ #panel{display:flex;height:35%;flex:0 0 35%;max-height:35%;overflow:hidden;overflow-x:hidden}
+ #mid{flex:0 1 120px;min-width:0}
+ #pad{flex:1 1 auto;min-width:0;width:auto;max-width:350px;gap:8px}
+ #fire{flex:0 0 25%;max-width:100px;width:auto;height:auto;aspect-ratio:1/1;max-height:100%;margin:0}
 }
 </style>
 </head>
