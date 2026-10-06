@@ -73,9 +73,9 @@
  "description": "Play chess online. Coming soon! (coming soon)"
  },
  {
- "title": "N-back",
- "url": "#",
- "description": "N-back working memory game. Coming soon! (coming soon)"
+ "title": "Dual N-Back",
+ "url": "games/dual-n-back.html",
+ "description": "Clinically proven working memory training. Track simultaneous visual and auditory sequences to expand mental focus."
  }
  ]
  },

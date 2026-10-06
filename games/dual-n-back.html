@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dual N-Back - Momentum Education</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { user-select: none; -webkit-user-select: none; }
+        .grid-cell { transition: background-color 0.15s ease, transform 0.1s ease; }
+    </style>
+</head>
+<body class="bg-[#FDF8EE] text-slate-800 flex flex-col h-screen w-full overflow-hidden m-0 p-0 box-border">
+<header class="h-14 bg-[#FDF8EE] border-b border-amber-900/10 flex items-center justify-between px-4 z-50 shrink-0">
+<div class="flex items-center space-x-2 font-bold text-lg text-amber-900">
+<span class="text-red-600 text-xl font-black">M</span><span>Momentum Education</span>
+</div>
+<div class="flex items-center space-x-3">
+<a href="../category.html?c=games" class="text-xs sm:text-sm font-semibold text-amber-900 hover:underline">← IQ Games</a>
+<button id="fsTopBtn" class="bg-slate-900 text-white px-3 py-1 rounded text-xs sm:text-sm font-mono font-medium shadow-sm">⛶ Fullscreen</button>
+</div>
+</header>
+<main class="flex-1 flex flex-col h-full overflow-hidden relative bg-slate-950 items-center justify-center p-3 sm:p-6" id="game-wrapper">
+<div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl flex flex-col p-4 sm:p-6 relative overflow-hidden">
+<div class="flex justify-between items-center pb-4 border-b border-slate-800">
+<div class="flex items-center space-x-3">
+<span class="px-3 py-1 bg-cyan-950/80 border border-cyan-500/40 text-cyan-400 font-mono text-sm font-bold rounded-md">Mode: <span id="nLevelDisplay">2-Back</span></span>
+<span class="text-xs sm:text-sm text-slate-400 font-mono">Trial: <span id="trialDisplay" class="text-white font-bold">0</span>/20</span>
+</div>
+<div class="flex items-center space-x-2">
+<span class="text-xs sm:text-sm text-slate-400 font-mono">Accuracy: <span id="accuracyDisplay" class="text-emerald-400 font-bold">100%</span></span>
+</div>
+</div>
+<div class="py-6 flex justify-center items-center">
+<div class="grid grid-cols-3 gap-3 w-64 h-64 sm:w-72 sm:h-72 p-2 bg-slate-950/70 border border-slate-800 rounded-xl">
+<div id="cell-0" class="grid-cell bg-slate-800/80 rounded-lg border border-slate-700/60"></div>
+<div id="cell-1" class="grid-cell bg-slate-800/80 rounded-lg border border-slate-700/60"></div>
+<div id="cell-2" class="grid-cell bg-slate-800/80 rounded-lg border border-slate-700/60"></div>
+<div id="cell-3" class="grid-cell bg-slate-800/80 rounded-lg border border-slate-700/60"></div>
+<div id="cell-4" class="grid-cell bg-slate-800/80 rounded-lg border border-slate-700/60 flex items-center justify-center">
+<span class="text-cyan-400/20 font-mono text-2xl font-bold">+</span>
+</div>
+<div id="cell-5" class="grid-cell bg-slate-800/80 rounded-lg border border-slate-700/60"></div>
+<div id="cell-6" class="grid-cell bg-slate-800/80 rounded-lg border border-slate-700/60"></div>
+<div id="cell-7" class="grid-cell bg-slate-800/80 rounded-lg border border-slate-700/60"></div>
+<div id="cell-8" class="grid-cell bg-slate-800/80 rounded-lg border border-slate-700/60"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 pt-2">
+<button id="posMatchBtn" class="flex flex-col items-center justify-center py-3 sm:py-4 px-2 bg-slate-800 border-2 border-slate-700 hover:border-cyan-500 rounded-xl active:scale-95 transition-all text-slate-200 cursor-pointer">
+<span class="text-base sm:text-lg font-bold text-cyan-400">Position Match</span>
+<span class="text-[11px] text-slate-400 font-mono mt-1">Press [ A ] or Tap</span>
+</button>
+<button id="soundMatchBtn" class="flex flex-col items-center justify-center py-3 sm:py-4 px-2 bg-slate-800 border-2 border-slate-700 hover:border-amber-500 rounded-xl active:scale-95 transition-all text-slate-200 cursor-pointer">
+<span class="text-base sm:text-lg font-bold text-amber-400">Audio Match</span>
+<span class="text-[11px] text-slate-400 font-mono mt-1">Press [ L ] or Tap</span>
+</button>
+<div id="overlay" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center z-30">
+<h1 class="text-2xl sm:text-3xl font-black text-cyan-400 mb-2">Dual N-Back Training</h1>
+<p class="text-xs sm:text-sm text-slate-300 max-w-sm mb-4">Remember the <strong>Grid Position</strong> and spoken <strong>Letter</strong> from <span id="nValueText" class="text-amber-400 font-bold">2</span> steps ago. Hit the buttons when either matches!</p>
+<div class="flex items-center space-x-3 mb-6">
+<label class="text-xs text-slate-400 font-mono">N Level:</label>
+<select id="nSelect" class="bg-slate-800 border border-slate-600 rounded px-3 py-1 text-cyan-400 text-sm font-bold outline-none">
+<option value="1">1-Back (Beginner)</option>
+<option value="2" selected>2-Back (Standard)</option>
+<option value="3">3-Back (Advanced)</option>
+</select>
+</div>
+<button id="startBtn" class="px-8 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg transition-transform active:scale-95">Start Session</button>
+</div>
+<div id="resultModal" class="hidden absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center z-40">
+<h2 class="text-3xl font-black text-emerald-400 mb-2">Session Complete!</h2>
+<div class="bg-slate-900 border border-slate-800 rounded-lg p-4 w-full max-w-xs mb-6 text-left font-mono text-sm space-y-2">
+<div class="flex justify-between text-slate-300"><span>Position Hits:</span> <span id="posScore" class="text-cyan-400 font-bold">0</span></div>
+<div class="flex justify-between text-slate-300"><span>Audio Hits:</span> <span id="audioScore" class="text-amber-400 font-bold">0</span></div>
+<div class="flex justify-between text-slate-300"><span>Mistakes / Misses:</span> <span id="missScore" class="text-red-400 font-bold">0</span></div>
+<hr class="border-slate-800 my-2">
+<div class="flex justify-between text-white font-bold text-base"><span>Accuracy:</span> <span id="finalAccuracy" class="text-emerald-400">0%</span></div>
+</div>
+<button id="replayBtn" class="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg shadow-lg active:scale-95 transition-transform">Play Again</button>
+</div>
+</div>
+</main>
+<script>
+const LETTERS=['C','H','K','L','Q','R','T','S'];
+const TOTAL_TRIALS=20;
+const STIMULUS_DURATION=1000;
+const INTERVAL_DURATION=2500;
+let N=2,currentTrial=0,positionHistory=[],letterHistory=[],gameTimer=null,isRunning=false;
+let posPressed=false,soundPressed=false,posCorrect=0,audioCorrect=0,errors=0;
+function speakLetter(letter){if('speechSynthesis' in window){window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(letter);u.rate=1.1;u.pitch=1.0;u.lang='en-US';window.speechSynthesis.speak(u);}}
+const fsBtn=document.getElementById('fsTopBtn');
+const gameWrapper=document.getElementById('game-wrapper');
+fsBtn.addEventListener('click',()=>{if(!document.fullscreenElement){gameWrapper.requestFullscreen().catch(e=>console.error(e));fsBtn.innerText='Exit';}else{document.exitFullscreen();fsBtn.innerText='Fullscreen';}});
+const startBtn=document.getElementById('startBtn');
+const overlay=document.getElementById('overlay');
+const resultModal=document.getElementById('resultModal');
+const replayBtn=document.getElementById('replayBtn');
+const nSelect=document.getElementById('nSelect');
+const nLevelDisplay=document.getElementById('nLevelDisplay');
+const trialDisplay=document.getElementById('trialDisplay');
+const accuracyDisplay=document.getElementById('accuracyDisplay');
+const posMatchBtn=document.getElementById('posMatchBtn');
+const soundMatchBtn=document.getElementById('soundMatchBtn');
+function startGame(){overlay.classList.add('hidden');resultModal.classList.add('hidden');currentTrial=0;positionHistory=[];letterHistory=[];posCorrect=0;audioCorrect=0;errors=0;isRunning=true;accuracyDisplay.innerText='100%';trialDisplay.innerText='0';nextTrial();}
+function triggerFlash(i){const c=document.getElementById('cell-'+i);if(c){c.classList.remove('bg-slate-800/80');c.classList.add('bg-cyan-400');setTimeout(()=>{c.classList.remove('bg-cyan-400');c.classList.add('bg-slate-800/80');},STIMULUS_DURATION);}}
+function checkPrev(){if(currentTrial<=N)return;const p=currentTrial-1,t=p-N;const pm=positionHistory[p]===positionHistory[t];const am=letterHistory[p]===letterHistory[t];if(pm){if(posPressed)posCorrect++;else errors++;}else if(posPressed)errors++;if(am){if(soundPressed)audioCorrect++;else errors++;}else if(soundPressed)errors++;const tm=posCorrect+audioCorrect,te=tm+errors;accuracyDisplay.innerText=(te>0?Math.round(tm/te*100):100)+'%';}
+function nextTrial(){if(currentTrial>0)checkPrev();posPressed=false;soundPressed=false;if(currentTrial>=TOTAL_TRIALS){finishGame();return;}currentTrial++;trialDisplay.innerText=currentTrial;let cp=Math.floor(Math.random()*9);if(cp===4)cp=3;let cl=LETTERS[Math.floor(Math.random()*LETTERS.length)];if(currentTrial>N&&Math.random()<0.35)cp=positionHistory[currentTrial-1-N];if(currentTrial>N&&Math.random()<0.35)cl=letterHistory[currentTrial-1-N];positionHistory.push(cp);letterHistory.push(cl);triggerFlash(cp);speakLetter(cl);gameTimer=setTimeout(nextTrial,INTERVAL_DURATION);}
+function handlePos(){if(!isRunning||posPressed)return;posPressed=true;posMatchBtn.classList.add('border-cyan-400');}
+function handleAud(){if(!isRunning||soundPressed)return;soundPressed=true;soundMatchBtn.classList.add('border-amber-400');}
+posMatchBtn.addEventListener('click',handlePos);soundMatchBtn.addEventListener('click',handleAud);
+window.addEventListener('keydown',(e)=>{if(e.key==='a'||e.key==='A')handlePos();if(e.key==='l'||e.key==='L')handleAud();});
+function finishGame(){isRunning=false;clearTimeout(gameTimer);const tm=posCorrect+audioCorrect,te=tm+errors;const acc=te>0?Math.round(tm/te*100):100;document.getElementById('posScore').innerText=posCorrect;document.getElementById('audioScore').innerText=audioCorrect;document.getElementById('missScore').innerText=errors;document.getElementById('finalAccuracy').innerText=acc+'%';resultModal.classList.remove('hidden');}
+nSelect.addEventListener('change',(e)=>{N=parseInt(e.target.value);document.getElementById('nValueText').innerText=N;nLevelDisplay.innerText=N+'-Back';});
+startBtn.addEventListener('click',startGame);
+replayBtn.addEventListener('click',()=>{resultModal.classList.add('hidden');overlay.classList.remove('hidden');});
+
+</script>
+</body>
+</html>
+
